@@ -20,7 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rainbow"
   spec.add_dependency "thor"
-  spec.add_dependency "ruby-progressbar"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
