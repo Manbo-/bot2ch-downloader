@@ -15,7 +15,8 @@ describe Bot2ch::Downloader::Image do
     end
 
     before do
-      Bot2ch::Client.stub(:get).and_return("dummy image")
+      response = double("response", body: "dummy")
+      Bot2ch::Client.any_instance.stub(:get).and_return(response)
     end
 
     after do
