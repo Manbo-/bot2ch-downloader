@@ -2,22 +2,29 @@
 [![Build Status](https://travis-ci.org/Manbo-/bot2ch-downloader.png)](https://travis-ci.org/Manbo-/bot2ch-downloader)
 
 ## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'bot2ch-downloader'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install bot2ch-downloader
+    $ git clone https://github.com/Manbo-/bot2ch-downloader.git
+    $ cd ./bot2ch-downloader
+    $ rake install
 
 ## Usage
 
-TODO: Write usage instructions here
+### Command
+
+    bot2ch show http://hoge.2ch.net/test/read.cgi/fuga/8098092/
+    bot2ch download http://hoge.2ch.net/test/read.cgi/fuga/8098092/ save_dir
+    bot2ch download http://hoge.2ch.net/test/read.cgi/fuga/8098092/ --override
+    bot2ch download http://hoge.2ch.net/test/read.cgi/fuga/8098092/ --wait 30
+    bot2ch download http://hoge.2ch.net/test/read.cgi/fuga/8098092/ --thread 5
+
+### Default options
+
+~/.bot2ch
+
+    wait: 3
+    thread: 5
+    override: false
+    save_to: /path/to/save_dir
+
 
 ## Contributing
 
