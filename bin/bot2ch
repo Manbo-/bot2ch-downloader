@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+require 'bot2ch/downloader'
+
+require 'ruby-progressbar'
+require 'thor'
+require 'thwait'
+require 'yaml'
+
+module Bot2ch
+  class App < Thor
+    WAIT_TIME = 3
+    THREAD_LIMIT = 3
+    DEFAULT_FILE = "#{ENV['HOME']}/.bot2ch"
+
+    desc 'download', 'download images'
+    option :wait
+    option :thread
+    option :override, :type => :boolean
+    def download(thread, dir = nil)
+      dat = Bot2ch::Thread.dat?(thread) ? dat : Bot2ch::Thread.url_to_dat(thread)
+      thread = Bot2ch::Thread.new(dat)
+      downloader = Bot2ch::Downloader.new(thread)
+      puts "not found image" and return if downloader.images.empty?
+
+      default = File.exist?(DEFAULT_FILE) ? YAML.load_file(DEFAULT_FILE) : {}
+      wait_time = (options[:wait_time] or default['wait_time'] or WAIT_TIME).to_i
+      thread_limit = (options[:thread] or default['thread'] or THREAD_LIMIT).to_i
+      override = (options[:override] or default['override'] or nil)
+      dir ||= (default['save_to'] or default_dir_name(thread))
+
+      thall = ThreadsWait.new
+      puts "save to: #{dir}"
+      puts "wait_time:#{wait_time}, thread: #{thread_limit}, override: #{override ? 'yes' : 'no'}"
+
+      downloader.images.group_by{ |image| URI.parse(image.to_s).host }.each do |host, imgs|
+        sleep 1 while thall.threads.select(&:alive?).size > thread_limit
+        thread = ::Thread.new do
+          imgs.each.with_index(1) do |image, idx|
+            image.download(dir, override: override)
+            sleep wait_time if idx != imgs.size
+          end
+        end
+        thall.join_nowait(thread)
+      end
+      thall.all_waits
+    end
+
+    desc 'show', 'show images'
+    def show(thread)
+      dat = Bot2ch::Thread.dat?(thread) ? thread : Bot2ch::Thread.url_to_dat(thread)
+      thread = Bot2ch::Thread.new(dat)
+      thread.posts.each do |post|
+        downloader = Bot2ch::Downloader.new(post)
+        downloader.images.each do |image|
+          puts image
+        end
+      end
+    end
+
+    private
+
+    def default_dir_name(thread)
+      "#{ENV['HOME']}/Downloads/2ch/#{thread.ita}/#{thread.dat_no}/"
+    end
+  end
+end
+
+Bot2ch::App.start
